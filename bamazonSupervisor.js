@@ -40,15 +40,70 @@ function salesByDepartment() {
     connection.query('SELECT * FROM departments', function (err, res) {
         console.log('Displaying all departments...');
         var r = [...res];
-        connection.query('SELECT product_sales FROM products', function(err, res) {
+        connection.query('SELECT product_sales FROM products', function (err, res) {
             for (var i = 0; i < r.length; i++) {
                 r[i].product_sales = res[i].product_sales;
-                r[i].total_profit = r[i].product_sales - r[i].over_head_costs ;
+                r[i].total_profit = r[i].product_sales - r[i].over_head_costs;
 
             }
-
             console.table(r);
+
+            askSupervisor();
         });
-        connection.end();
     });
+}
+
+function createDepartment() {
+    connection.query('SELECT * FROM departments', function (err, res) {
+        console.log('Creating new department...');
+        var nameArray = [];
+
+        for (var i = 0; i < res.length; i++) {
+            nameArray.push('' + res[i].department_name);
+        }
+
+        askDepartment(nameArray);
+    })
+}
+
+
+function askDepartment(names) {
+    inquirer.prompt([
+        {
+          name: "depname",
+          type: "input",
+          message: "Enter new department name:",
+          validate: function (userInput) {
+            if (names.indexOf(userInput) === -1) {
+              return true;
+            }
+            else {
+                console.log('\nExisting department.')
+                return false;
+            }
+          }
+        },
+        {
+            name: "ohcosts",
+            type: "input",
+            message: "Enter department's over head costs:",
+            validate: function(userInput) {
+                if (isNaN(parseInt(userInput))) {
+                    console.log('Enter a number...');
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+      ])
+        .then(function (answer) {
+          var department = answer.depname;
+          var ohcosts = parseInt(answer.ohcosts);
+          connection.query('INSERT INTO departments SET ?', {department_name: department, over_head_costs: ohcosts}, function(err, res) {
+              console.log('Department added...');
+              askSupervisor();
+          })
+        });
 }

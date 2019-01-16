@@ -64,7 +64,6 @@ function addToInventory() {
   console.log('Adding to inventory...');
   connection.query('SELECT item_id, product_name, price, stock_quantity FROM products', function (err, res) {
     var itemIDArray = [];
-    console.log(res[0].item_id);
     for (var i = 0; i < res.length; i++) {
       itemIDArray.push('' + res[i].item_id);
     }
@@ -102,8 +101,7 @@ function addUnits(item, units) {
   connection.query('SELECT stock_quantity FROM products WHERE ?', { item_id: item }, function (err, res) {
     var stock = res[0].stock_quantity;
     var updatedStock = stock + parseInt(units);
-
-    console.log(stock, updatedStock);
+    
     connection.query('UPDATE products SET ? WHERE ?', [{ stock_quantity: updatedStock }, { item_id: item }], function (err, res) {
       console.log('Stock quantity updated.');
       askManager();
